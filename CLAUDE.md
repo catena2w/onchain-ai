@@ -22,6 +22,10 @@ Write tests first, then code to pass them. Red → Green → Refactor.
 - Single Responsibility: Each function, class, and module should have one clear purpose.
 - Fail Fast: Check for potential errors early and raise exceptions immediately when issues occur.
 
-## Project Overview
+## EXAMPLES
+- Quex examples are available at http://github.com/quex-tech/quex-v1-examples
 
-Threshold-based monitoring service for Quex push-based oracle price feeds. Monitors prices for RBNT/USD, USDT/USD, USDC/USD, WETH/USD, WRBNT/USD, WBTC/USD, LQDX/USD pairs. When any price deviates from its previously pushed value beyond a configurable threshold (default 1%), triggers a batch update pushing all prices in a single request. Pair list and threshold are configurable.
+## DOCUMENTATION
+- Quex documentation is available at https://docs.quex.tech/ (sources at https://github.com/quex-tech/developer-docs) 
+
+## Project Overview
