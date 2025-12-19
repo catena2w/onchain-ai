@@ -16,6 +16,18 @@ Every piece of knowledge must have a single, unambiguous, authoritative represen
 ## TDD (Test-Driven Development)
 Write tests first, then code to pass them. Red → Green → Refactor.
 
+## Small Steps & Frequent Commits
+- Implement the minimal possible piece of logic at a time
+- Commit working code immediately after tests pass
+- Stop after each commit to explain what was done and what's next
+- Never accumulate large uncommitted changes
+
+## Test Coverage
+- Test happy paths (expected behavior)
+- Test wrong paths (edge cases, invalid inputs, access control)
+- Test isolation (e.g., one user's actions shouldn't affect another user's state)
+- Each test should verify one specific behavior
+
 ## Design Principles
 - Dependency Inversion: High-level modules should not depend on low-level modules. Both should depend on abstractions.
 - Open/Closed Principle: Software entities should be open for extension but closed for modification.
