@@ -40,6 +40,16 @@ Write tests first, then code to pass them. Red → Green → Refactor.
 - Single Responsibility: Each function, class, and module should have one clear purpose.
 - Fail Fast: Check for potential errors early and raise exceptions immediately when issues occur.
 
+## Functional Programming Style
+Prefer clean, pure functions where possible:
+- **Pure functions**: Given the same input, always return the same output. No hidden dependencies.
+- **Minimize side effects**: Isolate state changes. Separate computation from mutation.
+- **Small, focused functions**: Each function does one thing well. Compose small functions into larger ones.
+- **Explicit inputs/outputs**: All data a function needs comes through parameters. No reliance on hidden global state.
+- **Early returns**: Reduce nesting with guard clauses. Handle edge cases first, then the main logic.
+- **Immutability preference**: Avoid mutating data when possible. Create new values instead.
+- **Use `view`/`pure` in Solidity**: Mark functions that don't modify state. Helps reasoning and gas optimization.
+
 ## EXAMPLES
 - Quex examples are available at http://github.com/quex-tech/quex-v1-examples
 
