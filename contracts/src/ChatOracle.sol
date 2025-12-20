@@ -19,6 +19,8 @@ contract ChatOracle is Ownable {
         uint256 index;
     }
 
+    string public constant MODEL = "gpt-4o";
+
     address public quexCore;
     address public oraclePool;
     address public tdAddress;
@@ -140,9 +142,11 @@ contract ChatOracle is Ownable {
         flowId = config.build();
     }
 
-    function _buildRequestBody(string calldata prompt) private pure returns (bytes memory) {
+    function _buildRequestBody(string calldata prompt) private view returns (bytes memory) {
         return abi.encodePacked(
-            '{"model":"gpt-4o-mini","messages":[{"role":"system","content":"You are a helpful assistant responding to blockchain users. Keep responses concise."},{"role":"user","content":"',
+            '{"model":"',
+            MODEL,
+            '","messages":[{"role":"system","content":"You are a helpful assistant responding to blockchain users. Keep responses concise."},{"role":"user","content":"',
             prompt,
             '"}]}'
         );

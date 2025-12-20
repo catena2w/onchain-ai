@@ -235,4 +235,8 @@ contract ChatOracleTest is Test {
 
         assertTrue(flowId1 != flowId2, "Each message should have its own flow");
     }
+
+    function test_usesLatestGptModel() public {
+        assertEq(oracle.MODEL(), "gpt-4o");
+    }
 }
