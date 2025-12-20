@@ -1,7 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useEffect, useState } from "react";
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useReadContract,
+  useWriteContract,
+  useWatchContractEvent,
+} from "wagmi";
+import { parseEther, formatEther } from "viem";
+import { chatOracleAbi } from "@/lib/abi";
+import { CHAT_ORACLE_ADDRESS, zgChain } from "@/lib/config";
 
 type Message = {
   id: number;
@@ -16,19 +26,74 @@ export default function Home() {
   const { disconnect } = useDisconnect();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [depositAmount, setDepositAmount] = useState("0.01");
+
+  const { data: subscriptionId } = useReadContract({
+    address: CHAT_ORACLE_ADDRESS,
+    abi: chatOracleAbi,
+    functionName: "getUserSubscription",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const { data: conversation, refetch: refetchConversation } = useReadContract({
+    address: CHAT_ORACLE_ADDRESS,
+    abi: chatOracleAbi,
+    functionName: "getConversation",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const { writeContract, isPending } = useWriteContract();
+
+  const hasSubscription = subscriptionId && subscriptionId > 0n;
+
+  // Watch for ResponseReceived events
+  useWatchContractEvent({
+    address: CHAT_ORACLE_ADDRESS,
+    abi: chatOracleAbi,
+    eventName: "ResponseReceived",
+    onLogs: () => {
+      refetchConversation();
+    },
+  });
+
+  // Sync conversation from contract
+  useEffect(() => {
+    if (conversation) {
+      const msgs: Message[] = [];
+      conversation.forEach((msg, i) => {
+        msgs.push({ id: i * 2, role: "user", content: msg.prompt });
+        if (msg.response) {
+          msgs.push({ id: i * 2 + 1, role: "assistant", content: msg.response });
+        }
+      });
+      setMessages(msgs);
+    }
+  }, [conversation]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !address) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      role: "user",
-      content: input,
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput("");
+    const value = hasSubscription ? 0n : parseEther(depositAmount);
 
-    // TODO: Send transaction
+    writeContract(
+      {
+        address: CHAT_ORACLE_ADDRESS,
+        abi: chatOracleAbi,
+        functionName: "sendMessage",
+        args: [input],
+        value,
+        chain: zgChain,
+        account: address,
+      },
+      {
+        onSuccess: () => {
+          setInput("");
+          refetchConversation();
+        },
+      }
+    );
   };
 
   if (!isConnected) {
@@ -49,6 +114,9 @@ export default function Home() {
       <header className="p-4 border-b border-gray-700 flex justify-between items-center">
         <h1 className="text-xl font-bold">On-Chain AI Chat</h1>
         <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-400">
+            {hasSubscription ? "Subscription active" : "No subscription"}
+          </span>
           <span className="text-sm text-gray-400">
             {address?.slice(0, 6)}...{address?.slice(-4)}
           </span>
@@ -85,20 +153,38 @@ export default function Home() {
       </div>
 
       <div className="p-4 border-t border-gray-700">
+        {!hasSubscription && (
+          <div className="mb-3 p-3 bg-yellow-900/50 rounded-lg text-sm">
+            First message requires a deposit to create subscription.
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="number"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                className="w-24 px-2 py-1 bg-gray-800 rounded"
+                step="0.01"
+                min="0.001"
+              />
+              <span className="text-gray-400">A0GI</span>
+            </div>
+          </div>
+        )}
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && !isPending && handleSend()}
             placeholder="Type your message..."
             className="flex-1 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isPending}
           />
           <button
             onClick={handleSend}
-            className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
+            disabled={isPending}
+            className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            Send
+            {isPending ? "Sending..." : "Send"}
           </button>
         </div>
       </div>
