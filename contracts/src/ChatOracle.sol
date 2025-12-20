@@ -45,8 +45,6 @@ contract ChatOracle is Ownable {
         address _tdAddress,
         bytes calldata _encryptedApiKey
     ) external onlyOwner {
-        require(!initialized, "Already initialized");
-
         oraclePool = _oraclePool;
         tdAddress = _tdAddress;
         encryptedApiKey = _encryptedApiKey;

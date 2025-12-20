@@ -58,10 +58,13 @@ contract ChatOracleTest is Test {
         oracle.setUp(oraclePool, tdAddress, encryptedApiKey);
     }
 
-    function test_setUp_canOnlyBeCalledOnce() public {
+    function test_setUp_canUpdateAddresses() public {
         oracle.setUp(oraclePool, tdAddress, encryptedApiKey);
-        vm.expectRevert("Already initialized");
-        oracle.setUp(oraclePool, tdAddress, encryptedApiKey);
+
+        address newOraclePool = address(0x99);
+        oracle.setUp(newOraclePool, tdAddress, encryptedApiKey);
+
+        assertEq(oracle.oraclePool(), newOraclePool);
     }
 
     // === sendMessage tests ===
