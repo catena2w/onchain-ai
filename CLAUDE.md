@@ -4,6 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Git Workflow
 - Default branch: `main` (for all repos in this project)
+- One commit = one logical change
+- Commit messages: short, one-line (if you need multiple lines, split into separate commits)
+- Do not include Co-Authored-By in commits
 
 # Core Development Philosophy
 
