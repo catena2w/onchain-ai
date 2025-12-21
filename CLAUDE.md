@@ -64,6 +64,91 @@ Every piece of knowledge must have a single, unambiguous, authoritative represen
 - Test isolation (e.g., one user's actions shouldn't affect another user's state)
 - Each test should verify one specific behavior
 
+## Testing Best Practices
+
+### Universal Rules
+
+**Test behavior, not implementation:**
+- NEVER test internal state, private methods, or CSS classes
+- Test what the user/caller observes, not how code is structured internally
+- If refactoring breaks tests without changing behavior, the tests were wrong
+
+**Bad:**
+```typescript
+// Testing CSS class (implementation detail)
+expect(bubble).toHaveClass("bg-blue-600");
+```
+
+**Good:**
+```typescript
+// Testing visible behavior
+expect(screen.getByRole("button")).toBeDisabled();
+```
+
+### Smart Contracts (Foundry)
+
+**Use fuzz testing for functions with inputs:**
+```solidity
+// Bad: hardcoded single value
+function test_deposit() public {
+    vault.deposit(100);
+    assertEq(vault.balance(), 100);
+}
+
+// Good: fuzz with random values
+function testFuzz_deposit(uint256 amount) public {
+    vm.assume(amount > 0 && amount < type(uint128).max);
+    vault.deposit(amount);
+    assertEq(vault.balance(), amount);
+}
+```
+
+**Use invariant testing for system properties:**
+```solidity
+// Invariant: total deposits == sum of all user balances
+function invariant_totalDepositsMatchBalances() public {
+    assertEq(vault.totalDeposits(), sumAllBalances());
+}
+```
+
+**Avoid hardcoded addresses:**
+```solidity
+// Bad
+address public user = address(0x1);
+
+// Good: use makeAddr for readable, deterministic addresses
+address public user = makeAddr("user");
+address public attacker = makeAddr("attacker");
+```
+
+### Frontend (Vitest + React Testing Library)
+
+**Use user-centric queries:**
+```typescript
+// Prefer (in order):
+getByRole("button", { name: /submit/i })  // Best: accessible
+getByLabelText("Email")                    // Good: form fields
+getByText("Welcome")                       // OK: visible text
+getByTestId("submit-btn")                  // Last resort
+```
+
+**Test user interactions, not component internals:**
+```typescript
+// Bad: testing state
+expect(component.state.isOpen).toBe(true);
+
+// Good: testing what user sees
+expect(screen.getByRole("dialog")).toBeVisible();
+```
+
+### Anti-patterns to Avoid
+
+1. **Snapshot abuse**: Don't use snapshots for logic; only for stable UI
+2. **Testing libraries**: Don't test that React/Foundry work correctly
+3. **Mocking everything**: Over-mocking hides integration bugs
+4. **Test interdependence**: Each test must work in isolation
+5. **Hardcoded contract addresses in fork tests**: Use environment variables or deploy fresh
+
 ## Design Principles
 - Dependency Inversion: High-level modules should not depend on low-level modules. Both should depend on abstractions.
 - Open/Closed Principle: Software entities should be open for extension but closed for modification.
