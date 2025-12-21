@@ -1,7 +1,6 @@
-import { http, createConfig } from "wagmi";
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { defineChain } from "viem";
 import { arbitrumSepolia } from "viem/chains";
-import { injected } from "wagmi/connectors";
 
 export const zgMainnet = defineChain({
   id: 16600,
@@ -29,14 +28,13 @@ export const zgTestnet = defineChain({
 
 export { arbitrumSepolia };
 
-export const config = createConfig({
-  chains: [arbitrumSepolia, zgMainnet, zgTestnet],
-  connectors: [injected()],
-  transports: {
-    [arbitrumSepolia.id]: http(),
-    [zgMainnet.id]: http(),
-    [zgTestnet.id]: http(),
-  },
+export const CHAINS = [arbitrumSepolia, zgMainnet, zgTestnet] as const;
+
+export const config = getDefaultConfig({
+  appName: "On-Chain AI Chat",
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "demo",
+  chains: CHAINS,
+  ssr: true,
 });
 
 // Contract addresses per chain - update after deployment

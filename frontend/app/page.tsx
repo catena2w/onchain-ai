@@ -3,19 +3,15 @@
 import { useEffect, useState } from "react";
 import {
   useAccount,
-  useConnect,
-  useDisconnect,
   useReadContract,
   useWriteContract,
   useWatchContractEvent,
-  useSwitchChain,
   useChainId,
 } from "wagmi";
 import { parseEther, toHex } from "viem";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { chatOracleAbi } from "@/lib/abi";
-import { CONTRACT_ADDRESSES, arbitrumSepolia, zgMainnet, zgTestnet } from "@/lib/config";
-
-const CHAINS = [arbitrumSepolia, zgMainnet, zgTestnet];
+import { CONTRACT_ADDRESSES, CHAINS, arbitrumSepolia } from "@/lib/config";
 
 const SYSTEM_PROMPT = "You are a helpful assistant responding to blockchain users. Keep responses concise.";
 
@@ -39,9 +35,6 @@ type Message = {
 export default function Home() {
   const chainId = useChainId();
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { switchChain } = useSwitchChain();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [depositAmount, setDepositAmount] = useState("0.01");
@@ -104,8 +97,6 @@ export default function Home() {
         functionName: "sendMessage",
         args: [input, body],
         value,
-        chain: currentChain,
-        account: address,
       },
       {
         onSuccess: () => {
@@ -118,13 +109,10 @@ export default function Home() {
 
   if (!isConnected) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-900">
-        <button
-          onClick={() => connect({ connector: connectors[0] })}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Connect Wallet
-        </button>
+      <main className="min-h-screen flex flex-col items-center justify-center bg-gray-900 gap-6">
+        <h1 className="text-2xl font-bold text-white">On-Chain AI Chat</h1>
+        <p className="text-gray-400">Connect your wallet to start chatting</p>
+        <ConnectButton />
       </main>
     );
   }
@@ -134,29 +122,10 @@ export default function Home() {
       <header className="p-4 border-b border-gray-700 flex justify-between items-center">
         <h1 className="text-xl font-bold">On-Chain AI Chat</h1>
         <div className="flex items-center gap-4">
-          <select
-            value={chainId}
-            onChange={(e) => switchChain({ chainId: Number(e.target.value) })}
-            className="px-2 py-1 bg-gray-800 rounded text-sm"
-          >
-            {CHAINS.map((chain) => (
-              <option key={chain.id} value={chain.id}>
-                {chain.name}
-              </option>
-            ))}
-          </select>
           <span className="text-sm text-gray-400">
-            {hasSubscription ? "Active" : "No sub"}
+            {hasSubscription ? "Subscription: Active" : "No subscription"}
           </span>
-          <span className="text-sm text-gray-400">
-            {address?.slice(0, 6)}...{address?.slice(-4)}
-          </span>
-          <button
-            onClick={() => disconnect()}
-            className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
-          >
-            Disconnect
-          </button>
+          <ConnectButton />
         </div>
       </header>
 
