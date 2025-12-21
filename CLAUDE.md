@@ -8,6 +8,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Commit messages: short, one-line (if you need multiple lines, split into separate commits)
 - Do not include Co-Authored-By in commits
 
+## Parallel Development (Multiple Claude Instances)
+
+When multiple Claude instances work in parallel:
+
+### Worktrees
+- Main repo: `/Users/catena/Documents/Code/quex/quex-onchain-ai` (branch: `main`)
+- Worktree A: `/Users/catena/Documents/Code/quex/quex-onchain-ai-worktree-a` (branch: `worktree-a`)
+- Worktree B: Create with `git worktree add ../quex-onchain-ai-worktree-b -b worktree-b`
+
+### Coordination
+1. Check `.claude-sync.md` before starting work
+2. Update `.claude-sync.md` with your current task
+3. Avoid editing the same files as other instances
+4. Merge to main when feature is complete: `git checkout main && git merge worktree-a`
+
+### Sync File Format
+See `.claude-sync.md` for current status of all instances
+
 # Core Development Philosophy
 
 ## KISS (Keep It Simple, Stupid)
