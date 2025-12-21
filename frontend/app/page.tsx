@@ -8,6 +8,7 @@ import {
   useWatchContractEvent,
   useChainId,
   useWaitForTransactionReceipt,
+  usePublicClient,
 } from "wagmi";
 import { parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -35,6 +36,7 @@ const debug = (label: string, ...args: unknown[]) => debugLogger.log(label, args
 export default function Home() {
   const chainId = useChainId();
   const { address, isConnected } = useAccount();
+  const publicClient = usePublicClient();
   const [input, setInput] = useState("");
   const [depositAmount, setDepositAmount] = useState("0.01");
   const [pendingMessage, setPendingMessage] = useState<PendingMessage | null>(null);
@@ -55,33 +57,55 @@ export default function Home() {
 
   // Fetch historical events on mount to populate tx hashes
   useEffect(() => {
-    if (!contractAddress || !address) return;
+    if (!contractAddress || !address || !publicClient) return;
 
     const fetchEvents = async () => {
       try {
-        const response = await fetch(
-          `https://api-sepolia.arbiscan.io/api?module=logs&action=getLogs&address=${contractAddress}&topic0=0xb2e65e716e6f93d77edfd4289f2375ccac43fa3eaeb312a37e3b4439d84827b1`
-        );
-        const data = await response.json();
-        if (data.result && Array.isArray(data.result)) {
-          data.result.forEach((log: { topics: string[]; transactionHash: string }) => {
-            const messageId = BigInt(log.topics[2]).toString();
-            messageTxHashes.set(messageId, log.transactionHash as `0x${string}`);
-          });
-          debug("Fetched historical message events", { count: data.result.length });
-        }
+        // Fetch MessageSent events
+        const messageLogs = await publicClient.getLogs({
+          address: contractAddress,
+          event: {
+            type: "event",
+            name: "MessageSent",
+            inputs: [
+              { name: "user", type: "address", indexed: true },
+              { name: "messageId", type: "uint256", indexed: true },
+              { name: "prompt", type: "string", indexed: false },
+            ],
+          },
+          fromBlock: 0n,
+          toBlock: "latest",
+        });
+        messageLogs.forEach((log) => {
+          const messageId = log.args.messageId?.toString();
+          if (messageId && log.transactionHash) {
+            messageTxHashes.set(messageId, log.transactionHash);
+          }
+        });
+        debug("Fetched historical message events", { count: messageLogs.length });
 
-        const responseEvents = await fetch(
-          `https://api-sepolia.arbiscan.io/api?module=logs&action=getLogs&address=${contractAddress}&topic0=0xf492986db545bb6ae9b31c027489b197517d30e992aac719c0815e13d1919a48`
-        );
-        const responseData = await responseEvents.json();
-        if (responseData.result && Array.isArray(responseData.result)) {
-          responseData.result.forEach((log: { topics: string[]; transactionHash: string }) => {
-            const messageId = BigInt(log.topics[1]).toString();
-            responseTxHashes.set(messageId, log.transactionHash as `0x${string}`);
-          });
-          debug("Fetched historical response events", { count: responseData.result.length });
-        }
+        // Fetch ResponseReceived events
+        const responseLogs = await publicClient.getLogs({
+          address: contractAddress,
+          event: {
+            type: "event",
+            name: "ResponseReceived",
+            inputs: [
+              { name: "messageId", type: "uint256", indexed: true },
+              { name: "response", type: "string", indexed: false },
+            ],
+          },
+          fromBlock: 0n,
+          toBlock: "latest",
+        });
+        responseLogs.forEach((log) => {
+          const messageId = log.args.messageId?.toString();
+          if (messageId && log.transactionHash) {
+            responseTxHashes.set(messageId, log.transactionHash);
+          }
+        });
+        debug("Fetched historical response events", { count: responseLogs.length });
+
         // Trigger re-render after Maps are updated
         setTxHashesVersion((n) => n + 1);
       } catch (error) {
@@ -90,7 +114,7 @@ export default function Home() {
     };
 
     fetchEvents();
-  }, [contractAddress, address]);
+  }, [contractAddress, address, publicClient]);
 
   const { data: subscriptionId, refetch: refetchSubscription } = useReadContract({
     address: contractAddress,
