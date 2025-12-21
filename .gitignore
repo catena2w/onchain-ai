@@ -2,8 +2,13 @@
 cache/
 out/
 
+# macOS
+.DS_Store
+
 # Ignores development broadcast logs
-**/broadcast
+broadcast/
+**/broadcast/
+contracts/broadcast/
 
 # Docs
 docs/
