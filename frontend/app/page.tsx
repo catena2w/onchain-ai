@@ -9,50 +9,28 @@ import {
   useChainId,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { parseEther, formatEther } from "viem";
+import { parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { chatOracleAbi, quexCoreAbi } from "@/lib/abi";
 import { CONTRACT_ADDRESSES, QUEX_CORE_ADDRESSES, CHAINS, arbitrumSepolia } from "@/lib/config";
 import { buildOpenAIBody, getExplorerUrl } from "@/lib/utils";
-
-type Message = {
-  id: number;
-  role: "user" | "assistant";
-  content: string;
-  txHash?: `0x${string}`;
-  status?: "pending" | "confirming" | "confirmed" | "failed";
-  messageId?: bigint; // on-chain message ID
-};
-
-type PendingMessage = {
-  id: number;
-  content: string;
-  txHash?: `0x${string}`;
-  status: "pending" | "confirming" | "confirmed" | "failed";
-};
+import { createDebugLogger } from "@/lib/debug";
+import {
+  buildMessagesFromConversation,
+  formatTxHashShort,
+  formatBalance,
+  hasActiveSubscription,
+  type PendingMessage,
+  type TxHashMap,
+} from "@/lib/messages";
 
 // Store tx hashes for messages (messageId -> txHash)
-const messageTxHashes: Map<string, `0x${string}`> = new Map();
-const responseTxHashes: Map<string, `0x${string}`> = new Map();
+const messageTxHashes: TxHashMap = new Map();
+const responseTxHashes: TxHashMap = new Map();
 
-// Debug log storage for UI display
-const debugLogs: string[] = [];
-const MAX_LOGS = 50;
-let debugUpdateCallback: (() => void) | null = null;
-
-function debug(label: string, ...args: unknown[]) {
-  const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
-  const message = `[${timestamp}] ${label}: ${args.map(a =>
-    typeof a === "object" ? JSON.stringify(a, null, 0) : String(a)
-  ).join(" ")}`;
-  console.log(`[ChatOracle] ${label}:`, ...args);
-  debugLogs.unshift(message);
-  if (debugLogs.length > MAX_LOGS) debugLogs.pop();
-  // Only update if callback is set and we're not in a render
-  if (debugUpdateCallback) {
-    setTimeout(debugUpdateCallback, 0);
-  }
-}
+// Debug logger instance
+const debugLogger = createDebugLogger({ maxLogs: 50 });
+const debug = (label: string, ...args: unknown[]) => debugLogger.log(label, args);
 
 export default function Home() {
   const chainId = useChainId();
@@ -67,8 +45,8 @@ export default function Home() {
 
   // Register debug update callback
   useEffect(() => {
-    debugUpdateCallback = () => setDebugVersion((n) => n + 1);
-    return () => { debugUpdateCallback = null; };
+    debugLogger.setUpdateCallback(() => setDebugVersion((n) => n + 1));
+    return () => { debugLogger.setUpdateCallback(null); };
   }, []);
 
   const contractAddress = CONTRACT_ADDRESSES[chainId];
@@ -144,7 +122,7 @@ export default function Home() {
     hash: pendingMessage?.txHash,
   });
 
-  const hasSubscription = subscriptionId && subscriptionId > 0n;
+  const hasSubscription = hasActiveSubscription(subscriptionId);
 
   // Watch for ResponseReceived events
   useWatchContractEvent({
@@ -233,44 +211,12 @@ export default function Home() {
   }, [txError]);
 
   // Build messages from conversation + pending
-  const messages: Message[] = [];
-  if (conversation) {
-    conversation.forEach((msg, i) => {
-      const messageId = BigInt(i + 1); // messageIds start at 1
-      const userTxHash = messageTxHashes.get(messageId.toString());
-      const responseTxHash = responseTxHashes.get(messageId.toString());
-
-      messages.push({
-        id: i * 2,
-        role: "user",
-        content: msg.prompt,
-        status: "confirmed",
-        messageId,
-        txHash: userTxHash,
-      });
-      if (msg.response) {
-        messages.push({
-          id: i * 2 + 1,
-          role: "assistant",
-          content: msg.response,
-          status: "confirmed",
-          messageId,
-          txHash: responseTxHash,
-        });
-      }
-    });
-  }
-
-  // Add pending message if it's not already in conversation
-  if (pendingMessage && !messages.some(m => m.role === "user" && m.content === pendingMessage.content)) {
-    messages.push({
-      id: pendingMessage.id,
-      role: "user",
-      content: pendingMessage.content,
-      txHash: pendingMessage.txHash,
-      status: pendingMessage.status,
-    });
-  }
+  const messages = buildMessagesFromConversation(
+    conversation ?? [],
+    pendingMessage,
+    messageTxHashes,
+    responseTxHashes
+  );
 
   const handleSend = useCallback(() => {
     if (!input.trim() || !address || !contractAddress) {
@@ -341,7 +287,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-400">
             {hasSubscription
-              ? `Balance: ${subscriptionBalance ? Number(formatEther(subscriptionBalance)).toFixed(6) : "..."} ${currentChain.nativeCurrency.symbol}`
+              ? `Balance: ${subscriptionBalance ? formatBalance(subscriptionBalance) : "..."} ${currentChain.nativeCurrency.symbol}`
               : "No subscription"}
           </span>
           <ConnectButton />
@@ -354,7 +300,7 @@ export default function Home() {
             <span className="text-green-400">Debug Logs (copy and share with AI)</span>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(debugLogs.join("\n"));
+                navigator.clipboard.writeText(debugLogger.getLogs().join("\n"));
                 alert("Logs copied to clipboard!");
               }}
               className="px-2 py-1 bg-gray-800 rounded hover:bg-gray-700"
@@ -362,12 +308,12 @@ export default function Home() {
               Copy All
             </button>
           </div>
-          {debugLogs.map((log, i) => (
+          {debugLogger.getLogs().map((log, i) => (
             <div key={i} className="text-gray-300 whitespace-pre-wrap break-all">
               {log}
             </div>
           ))}
-          {debugLogs.length === 0 && (
+          {debugLogger.getLogs().length === 0 && (
             <div className="text-gray-500">No logs yet... (v{debugVersion})</div>
           )}
         </div>
@@ -409,7 +355,7 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="hover:text-blue-400 underline"
                   >
-                    tx:{msg.txHash.slice(2, 8)}
+                    tx:{formatTxHashShort(msg.txHash)}
                   </a>
                 )}
               </div>
