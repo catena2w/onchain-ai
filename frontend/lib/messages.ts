@@ -26,6 +26,27 @@ export type TxHashMap = Map<string, `0x${string}`>;
 // Map from prompt content to messageId (for matching conversation to events)
 export type PromptToMessageIdMap = Map<string, string>;
 
+// Event log types for building messages from events
+export type MessageSentLog = {
+  messageId: bigint;
+  prompt: string;
+  txHash: `0x${string}`;
+};
+
+export type ResponseReceivedLog = {
+  messageId: bigint;
+  response: string;
+  txHash: `0x${string}`;
+};
+
+// Message type with guaranteed txHash (for confirmed messages)
+export type OnChainMessage = {
+  messageId: bigint;
+  role: "user" | "assistant";
+  content: string;
+  txHash: `0x${string}`;
+};
+
 export function formatTxHashShort(txHash: string): string {
   return txHash.slice(2, 8);
 }
@@ -103,4 +124,48 @@ export function buildMessagesFromConversation(
   }
 
   return messages;
+}
+
+/**
+ * Build messages from event logs. Every message has a guaranteed txHash.
+ */
+export function buildMessagesFromEvents(
+  messageLogs: MessageSentLog[],
+  responseLogs: ResponseReceivedLog[]
+): OnChainMessage[] {
+  // Create response lookup by messageId
+  const responseByMessageId = new Map<string, ResponseReceivedLog>();
+  responseLogs.forEach((log) => {
+    responseByMessageId.set(log.messageId.toString(), log);
+  });
+
+  // Sort messages by messageId
+  const sortedMessages = [...messageLogs].sort((a, b) =>
+    a.messageId < b.messageId ? -1 : a.messageId > b.messageId ? 1 : 0
+  );
+
+  const result: OnChainMessage[] = [];
+
+  sortedMessages.forEach((msg) => {
+    // Add user message
+    result.push({
+      messageId: msg.messageId,
+      role: "user",
+      content: msg.prompt,
+      txHash: msg.txHash,
+    });
+
+    // Add assistant message if response exists
+    const response = responseByMessageId.get(msg.messageId.toString());
+    if (response) {
+      result.push({
+        messageId: msg.messageId,
+        role: "assistant",
+        content: response.response,
+        txHash: response.txHash,
+      });
+    }
+  });
+
+  return result;
 }
