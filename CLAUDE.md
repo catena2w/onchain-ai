@@ -17,14 +17,23 @@ When multiple Claude instances work in parallel:
 - Worktree A: `/Users/catena/Documents/Code/quex/quex-onchain-ai-worktree-a` (branch: `worktree-a`)
 - Worktree B: Create with `git worktree add ../quex-onchain-ai-worktree-b -b worktree-b`
 
-### Coordination
-1. Check `.claude-sync.md` before starting work
-2. Update `.claude-sync.md` with your current task
-3. Avoid editing the same files as other instances
-4. Merge to main when feature is complete: `git checkout main && git merge worktree-a`
+### Coordination via Sync File
+**IMPORTANT**: Always check and update `.claude-sync.md` when working in parallel.
 
-### Sync File Format
-See `.claude-sync.md` for current status of all instances
+1. **Before starting work**: Read `.claude-sync.md` to see what other instances are working on
+2. **When starting a task**: Update your instance status (working on, files being edited)
+3. **Avoid conflicts**: Don't edit files owned by other instances
+4. **When done**: Update status and merge to main
+
+### Sync File Setup
+- `.claude-sync.md` is gitignored (contains internal communication)
+- Template available at `.claude-sync.template.md`
+- To create: `cp .claude-sync.template.md .claude-sync.md`
+
+### Merge Flow
+```bash
+git checkout main && git merge worktree-a
+```
 
 # Core Development Philosophy
 
