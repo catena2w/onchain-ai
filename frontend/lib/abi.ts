@@ -2,7 +2,10 @@ export const chatOracleAbi = [
   {
     type: "function",
     name: "sendMessage",
-    inputs: [{ name: "prompt", type: "string" }],
+    inputs: [
+      { name: "prompt", type: "string" },
+      { name: "body", type: "bytes" },
+    ],
     outputs: [{ name: "messageId", type: "uint256" }],
     stateMutability: "payable",
   },

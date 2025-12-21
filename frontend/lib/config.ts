@@ -1,5 +1,6 @@
 import { http, createConfig } from "wagmi";
 import { defineChain } from "viem";
+import { arbitrumSepolia } from "viem/chains";
 import { injected } from "wagmi/connectors";
 
 export const zgMainnet = defineChain({
@@ -26,10 +27,13 @@ export const zgTestnet = defineChain({
   },
 });
 
+export { arbitrumSepolia };
+
 export const config = createConfig({
-  chains: [zgMainnet, zgTestnet],
+  chains: [arbitrumSepolia, zgMainnet, zgTestnet],
   connectors: [injected()],
   transports: {
+    [arbitrumSepolia.id]: http(),
     [zgMainnet.id]: http(),
     [zgTestnet.id]: http(),
   },
@@ -37,6 +41,7 @@ export const config = createConfig({
 
 // Contract addresses per chain - update after deployment
 export const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
+  [arbitrumSepolia.id]: "0x0000000000000000000000000000000000000000",
   [zgMainnet.id]: "0x0000000000000000000000000000000000000000",
   [zgTestnet.id]: "0x0000000000000000000000000000000000000000",
 };

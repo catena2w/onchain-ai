@@ -8,8 +8,10 @@ out/
 # Docs
 docs/
 
-# Dotenv file
+# Dotenv files
 .env
+.env.local
+.env*.local
 
 # Config with secrets
 config.yaml

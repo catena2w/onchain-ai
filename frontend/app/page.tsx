@@ -11,9 +11,24 @@ import {
   useSwitchChain,
   useChainId,
 } from "wagmi";
-import { parseEther } from "viem";
+import { parseEther, toHex } from "viem";
 import { chatOracleAbi } from "@/lib/abi";
-import { CONTRACT_ADDRESSES, zgMainnet, zgTestnet } from "@/lib/config";
+import { CONTRACT_ADDRESSES, arbitrumSepolia, zgMainnet, zgTestnet } from "@/lib/config";
+
+const CHAINS = [arbitrumSepolia, zgMainnet, zgTestnet];
+
+const SYSTEM_PROMPT = "You are a helpful assistant responding to blockchain users. Keep responses concise.";
+
+function buildOpenAIBody(prompt: string): `0x${string}` {
+  const body = JSON.stringify({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ],
+  });
+  return toHex(new TextEncoder().encode(body));
+}
 
 type Message = {
   id: number;
@@ -32,7 +47,7 @@ export default function Home() {
   const [depositAmount, setDepositAmount] = useState("0.01");
 
   const contractAddress = CONTRACT_ADDRESSES[chainId];
-  const currentChain = chainId === zgMainnet.id ? zgMainnet : zgTestnet;
+  const currentChain = CHAINS.find((c) => c.id === chainId) ?? arbitrumSepolia;
 
   const { data: subscriptionId } = useReadContract({
     address: contractAddress,
@@ -80,13 +95,14 @@ export default function Home() {
     if (!input.trim() || !address || !contractAddress) return;
 
     const value = hasSubscription ? 0n : parseEther(depositAmount);
+    const body = buildOpenAIBody(input);
 
     writeContract(
       {
         address: contractAddress,
         abi: chatOracleAbi,
         functionName: "sendMessage",
-        args: [input],
+        args: [input, body],
         value,
         chain: currentChain,
         account: address,
@@ -123,8 +139,11 @@ export default function Home() {
             onChange={(e) => switchChain({ chainId: Number(e.target.value) })}
             className="px-2 py-1 bg-gray-800 rounded text-sm"
           >
-            <option value={zgTestnet.id}>{zgTestnet.name}</option>
-            <option value={zgMainnet.id}>{zgMainnet.name}</option>
+            {CHAINS.map((chain) => (
+              <option key={chain.id} value={chain.id}>
+                {chain.name}
+              </option>
+            ))}
           </select>
           <span className="text-sm text-gray-400">
             {hasSubscription ? "Active" : "No sub"}
@@ -176,7 +195,7 @@ export default function Home() {
                 step="0.01"
                 min="0.001"
               />
-              <span className="text-gray-400">A0GI</span>
+              <span className="text-gray-400">{currentChain.nativeCurrency.symbol}</span>
             </div>
           </div>
         )}

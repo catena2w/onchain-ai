@@ -1,66 +1,80 @@
-## Foundry
+# ChatOracle Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Solidity smart contracts for on-chain AI chat via Quex oracles.
 
-Foundry consists of:
+## Setup
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```bash
+forge install
 ```
 
-### Test
+## Test
 
-```shell
-$ forge test
+```bash
+forge test
 ```
 
-### Format
+## Deploy
 
-```shell
-$ forge fmt
+### 1. Encrypt your OpenAI API key
+
+```bash
+# Clone Quex tools
+git clone https://github.com/quex-tech/quex-v1-interfaces
+cd quex-v1-interfaces/tools/encrypt_data
+pip install -r requirements.txt
+
+# Encrypt for Arbitrum Sepolia
+python encrypt_data.py \
+  --data "Bearer sk-YOUR_OPENAI_KEY" \
+  --td-public-key 0x4af5d1d8db254edb79ead159a57d4c0102209a123f3eb27a74f9b5221edf4ae38dfddf5005c5f35cd35e4726d7044de1152ecd4393ab507f1fa4ad60132b0d67
 ```
 
-### Gas Snapshots
+### 2. Configure environment
 
-```shell
-$ forge snapshot
+```bash
+cp .env.example .env.local
+# Edit .env.local with your PRIVATE_KEY and ENCRYPTED_API_KEY
 ```
 
-### Anvil
+### 3. Deploy
 
-```shell
-$ anvil
+```bash
+source .env.local
+
+# Arbitrum Sepolia
+forge script script/Deploy.s.sol \
+  --rpc-url https://sepolia-rollup.arbitrum.io/rpc \
+  --broadcast \
+  --private-key $PRIVATE_KEY
+
+# 0G Mainnet
+forge script script/Deploy.s.sol \
+  --rpc-url https://evmrpc.0g.ai \
+  --broadcast \
+  --private-key $PRIVATE_KEY
 ```
 
-### Deploy
+### 4. Update frontend
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+Copy the deployed contract address to `frontend/lib/config.ts`.
+
+## Contract Interface
+
+```solidity
+// Send a message (first call requires ETH deposit for Quex subscription)
+function sendMessage(string calldata prompt, bytes calldata body) external payable returns (uint256 messageId);
+
+// Get conversation history
+function getConversation(address user) external view returns (Message[] memory);
+
+// Check subscription status
+function getUserSubscription(address user) external view returns (uint256);
 ```
 
-### Cast
+## Quex Addresses
 
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+| Network | QuexCore | Oracle Pool | Trust Domain |
+|---------|----------|-------------|--------------|
+| Arbitrum Sepolia | `0x97076a3c...` | `0xE83bB203...` | `0x128B61f6...` |
+| 0G Mainnet | `0x48f15775...` | `0xe0655573...` | `0xB86EeAe9...` |

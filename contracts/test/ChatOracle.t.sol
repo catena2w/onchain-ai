@@ -45,6 +45,14 @@ contract ChatOracleTest is Test {
         _mockQuexCalls();
     }
 
+    function _buildBody(string memory prompt) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            '{"model":"gpt-4o","messages":[{"role":"user","content":"',
+            prompt,
+            '"}]}'
+        );
+    }
+
     // === setUp tests ===
 
     function test_setUp_setsInitialized() public {
@@ -73,21 +81,21 @@ contract ChatOracleTest is Test {
         vm.deal(user, 1 ether);
         vm.prank(user);
         vm.expectRevert("Not initialized");
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
     }
 
     function test_sendMessage_firstMessageRequiresDeposit() public {
         _initializeFlow();
         vm.prank(user);
         vm.expectRevert("First message requires deposit");
-        oracle.sendMessage("Hello");
+        oracle.sendMessage("Hello", _buildBody("Hello"));
     }
 
     function test_sendMessage_createsSubscriptionOnFirstMessage() public {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
 
         assertTrue(oracle.getUserSubscription(user) != 0);
     }
@@ -96,7 +104,7 @@ contract ChatOracleTest is Test {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        uint256 messageId = oracle.sendMessage{value: 0.1 ether}("Hello, AI!");
+        uint256 messageId = oracle.sendMessage{value: 0.1 ether}("Hello, AI!", _buildBody("Hello, AI!"));
 
         assertEq(messageId, 1);
         assertEq(oracle.getMessageCount(user), 1);
@@ -111,7 +119,7 @@ contract ChatOracleTest is Test {
         vm.prank(user);
         vm.expectEmit(true, true, false, true);
         emit ChatOracle.MessageSent(user, 1, "Hello, AI!");
-        oracle.sendMessage{value: 0.1 ether}("Hello, AI!");
+        oracle.sendMessage{value: 0.1 ether}("Hello, AI!", _buildBody("Hello, AI!"));
     }
 
     function test_sendMessage_subsequentMessagesNoDepositRequired() public {
@@ -119,10 +127,10 @@ contract ChatOracleTest is Test {
         vm.deal(user, 1 ether);
 
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("First");
+        oracle.sendMessage{value: 0.1 ether}("First", _buildBody("First"));
 
         vm.prank(user);
-        oracle.sendMessage("Second"); // no value attached
+        oracle.sendMessage("Second", _buildBody("Second")); // no value attached
 
         assertEq(oracle.getMessageCount(user), 2);
     }
@@ -134,10 +142,10 @@ contract ChatOracleTest is Test {
         vm.deal(user2, 1 ether);
 
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("User1 message");
+        oracle.sendMessage{value: 0.1 ether}("User1 message", _buildBody("User1 message"));
 
         vm.prank(user2);
-        oracle.sendMessage{value: 0.1 ether}("User2 message");
+        oracle.sendMessage{value: 0.1 ether}("User2 message", _buildBody("User2 message"));
 
         assertEq(oracle.getMessageCount(user), 1);
         assertEq(oracle.getMessageCount(user2), 1);
@@ -149,7 +157,7 @@ contract ChatOracleTest is Test {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
 
         DataItem memory response = DataItem({
             timestamp: block.timestamp,
@@ -166,7 +174,7 @@ contract ChatOracleTest is Test {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
 
         DataItem memory response = DataItem({
             timestamp: block.timestamp,
@@ -185,7 +193,7 @@ contract ChatOracleTest is Test {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
 
         DataItem memory response = DataItem({
             timestamp: block.timestamp,
@@ -203,7 +211,7 @@ contract ChatOracleTest is Test {
         _initializeFlow();
         vm.deal(user, 1 ether);
         vm.prank(user);
-        oracle.sendMessage{value: 0.1 ether}("Hello");
+        oracle.sendMessage{value: 0.1 ether}("Hello", _buildBody("Hello"));
 
         DataItem memory response = DataItem({
             timestamp: block.timestamp,
@@ -216,27 +224,23 @@ contract ChatOracleTest is Test {
         oracle.processResponse(1, response, IdType.FlowId);
     }
 
-    // === Dynamic prompt tests ===
+    // === Dynamic flow tests ===
 
     function test_sendMessage_createsNewFlowPerMessage() public {
         _initializeFlow();
         vm.deal(user, 1 ether);
 
-        // Each message should create its own flow with the user's prompt
+        // Each message should create its own flow
         vm.prank(user);
-        uint256 messageId1 = oracle.sendMessage{value: 0.1 ether}("First prompt");
+        uint256 messageId1 = oracle.sendMessage{value: 0.1 ether}("First prompt", _buildBody("First prompt"));
 
         vm.prank(user);
-        uint256 messageId2 = oracle.sendMessage("Second prompt");
+        uint256 messageId2 = oracle.sendMessage("Second prompt", _buildBody("Second prompt"));
 
         // Verify different flow IDs were created for each message
         uint256 flowId1 = oracle.getMessageFlowId(messageId1);
         uint256 flowId2 = oracle.getMessageFlowId(messageId2);
 
         assertTrue(flowId1 != flowId2, "Each message should have its own flow");
-    }
-
-    function test_usesLatestGptModel() public {
-        assertEq(oracle.MODEL(), "gpt-4o");
     }
 }

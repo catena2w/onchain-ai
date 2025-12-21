@@ -19,8 +19,6 @@ contract ChatOracle is Ownable {
         uint256 index;
     }
 
-    string public constant MODEL = "gpt-4o";
-
     address public quexCore;
     address public oraclePool;
     address public tdAddress;
@@ -53,7 +51,10 @@ contract ChatOracle is Ownable {
         initialized = true;
     }
 
-    function sendMessage(string calldata prompt) external payable returns (uint256 messageId) {
+    function sendMessage(
+        string calldata prompt,
+        bytes calldata body
+    ) external payable returns (uint256 messageId) {
         require(initialized, "Not initialized");
 
         // Create subscription for user if needed
@@ -72,8 +73,8 @@ contract ChatOracle is Ownable {
         _conversations[msg.sender].push(Message({prompt: prompt, response: ""}));
         _messageLocations[messageId] = MessageLocation({user: msg.sender, index: index});
 
-        // Create flow with user's prompt
-        uint256 flowId = _createFlowWithPrompt(prompt);
+        // Create flow with provided body
+        uint256 flowId = _createFlow(body);
         _messageFlowIds[messageId] = flowId;
 
         // Create request
@@ -115,14 +116,12 @@ contract ChatOracle is Ownable {
         return _messageFlowIds[messageId];
     }
 
-    function _createFlowWithPrompt(string calldata prompt) private returns (uint256 flowId) {
+    function _createFlow(bytes calldata body) private returns (uint256 flowId) {
         RequestHeader[] memory headers = new RequestHeader[](1);
         headers[0] = RequestHeader({key: "Content-Type", value: "application/json"});
 
         RequestHeaderPatch[] memory privateHeaders = new RequestHeaderPatch[](1);
         privateHeaders[0] = RequestHeaderPatch({key: "Authorization", ciphertext: encryptedApiKey});
-
-        bytes memory body = _buildRequestBody(prompt);
 
         FlowBuilder.FlowConfig memory config = FlowBuilder.create(
             quexCore,
@@ -140,16 +139,6 @@ contract ChatOracle is Ownable {
         config = config.withCallback(address(this), this.processResponse.selector);
 
         flowId = config.build();
-    }
-
-    function _buildRequestBody(string calldata prompt) private pure returns (bytes memory) {
-        return abi.encodePacked(
-            '{"model":"',
-            MODEL,
-            '","messages":[{"role":"system","content":"You are a helpful assistant responding to blockchain users. Keep responses concise."},{"role":"user","content":"',
-            prompt,
-            '"}]}'
-        );
     }
 
     function _createSubscription(address user, uint256 deposit) private returns (uint256 subscriptionId) {
