@@ -1,3 +1,13 @@
+export const quexCoreAbi = [
+  {
+    type: "function",
+    name: "balance",
+    inputs: [{ name: "subscriptionId", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+] as const;
+
 export const chatOracleAbi = [
   {
     type: "function",

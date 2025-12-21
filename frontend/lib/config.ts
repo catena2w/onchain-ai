@@ -43,3 +43,10 @@ export const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
   [zgMainnet.id]: "0x0000000000000000000000000000000000000000",
   [zgTestnet.id]: "0x0000000000000000000000000000000000000000",
 };
+
+// Quex Core addresses per chain
+export const QUEX_CORE_ADDRESSES: Record<number, `0x${string}`> = {
+  [arbitrumSepolia.id]: "0x97076a3c0A414E779f7BEC2Bd196D4FdaADFDB96",
+  [zgMainnet.id]: "0x0000000000000000000000000000000000000000",
+  [zgTestnet.id]: "0x0000000000000000000000000000000000000000",
+};
