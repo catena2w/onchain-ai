@@ -55,6 +55,20 @@ Prefer clean, pure functions where possible:
 
 ## TDD Workflow
 
+Always follow TDD workflow for ALL code changes (contracts AND frontend).
+
+### Testing Tools
+
+**Smart Contracts (Foundry):**
+- `forge test` - Run contract tests
+- `forge coverage` - Check test coverage
+
+**Frontend (Vitest + React Testing Library):**
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once
+- Extract pure functions to `lib/utils.ts` for easy testing
+- Test utilities first, then components
+
 ### Agents
 
 Three agents handle the red-green-refactor cycle:
