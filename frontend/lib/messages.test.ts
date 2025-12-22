@@ -5,6 +5,7 @@ import {
   formatTxHashShort,
   formatBalance,
   hasActiveSubscription,
+  needsDeposit,
   type ConversationItem,
   type PendingMessage,
   type TxHashMap,
@@ -49,6 +50,27 @@ describe("hasActiveSubscription", () => {
   it("returns true for positive value", () => {
     expect(hasActiveSubscription(1n)).toBe(true);
     expect(hasActiveSubscription(100n)).toBe(true);
+  });
+});
+
+describe("needsDeposit", () => {
+  it("returns true when no subscription", () => {
+    expect(needsDeposit(undefined, undefined)).toBe(true);
+    expect(needsDeposit(0n, undefined)).toBe(true);
+  });
+
+  it("returns true when subscription exists but balance is zero", () => {
+    expect(needsDeposit(1n, 0n)).toBe(true);
+    expect(needsDeposit(100n, 0n)).toBe(true);
+  });
+
+  it("returns false when subscription exists with positive balance", () => {
+    expect(needsDeposit(1n, 1000n)).toBe(false);
+    expect(needsDeposit(100n, 999999n)).toBe(false);
+  });
+
+  it("returns true when subscription exists but balance is undefined", () => {
+    expect(needsDeposit(1n, undefined)).toBe(true);
   });
 });
 

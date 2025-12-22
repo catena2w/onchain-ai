@@ -59,6 +59,21 @@ export function hasActiveSubscription(subscriptionId: bigint | undefined): boole
   return subscriptionId !== undefined && subscriptionId > 0n;
 }
 
+export function needsDeposit(
+  subscriptionId: bigint | undefined,
+  balance: bigint | undefined
+): boolean {
+  // No subscription - needs deposit to create one
+  if (!hasActiveSubscription(subscriptionId)) {
+    return true;
+  }
+  // Subscription exists but no balance or zero balance - needs top-up
+  if (balance === undefined || balance === 0n) {
+    return true;
+  }
+  return false;
+}
+
 export function buildMessagesFromConversation(
   conversation: readonly ConversationItem[],
   pendingMessage: PendingMessage | null,
