@@ -348,6 +348,7 @@ export default function Home() {
         abi: chatOracleAbi,
         functionName: "withdraw",
         args: [],
+        gas: 500_000n, // Explicit gas to avoid estimation issues with rate-limited RPCs
       },
       {
         onSuccess: (hash) => {
