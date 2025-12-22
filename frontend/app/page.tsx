@@ -60,6 +60,14 @@ export default function Home() {
   const quexCoreAddress = QUEX_CORE_ADDRESSES[chainId];
   const currentChain = CHAINS.find((c) => c.id === chainId) ?? arbitrumSepolia;
 
+  // Log RPC info on mount
+  useEffect(() => {
+    if (publicClient) {
+      const transport = publicClient.transport as { url?: string };
+      debug("RPC", { chainId, rpcUrl: transport.url || "unknown" });
+    }
+  }, [publicClient, chainId]);
+
   // Fetch historical events on mount - events are the source of truth for messages
   useEffect(() => {
     if (!contractAddress || !address || !publicClient) return;
