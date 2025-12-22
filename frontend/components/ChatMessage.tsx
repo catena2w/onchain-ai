@@ -29,7 +29,7 @@ export function ChatMessage({
         <div
           className={`px-4 py-3 rounded-2xl ${
             isUser
-              ? "bg-purple-600 text-white"
+              ? "bg-[#7a00df] text-white"
               : "bg-[#1a1a2e] border border-[#2a2a3e] text-gray-100"
           } ${isPending ? "opacity-70" : ""}`}
         >
@@ -42,7 +42,7 @@ export function ChatMessage({
             </span>
           )}
           {status === "confirming" && (
-            <span className="animate-pulse text-purple-400">
+            <span className="animate-pulse text-[#7a00df]">
               Confirming on chain...
             </span>
           )}
@@ -52,7 +52,7 @@ export function ChatMessage({
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-purple-400 underline transition-colors"
+              className="hover:text-[#7a00df] underline transition-colors"
             >
               tx:{formatTxHashShort(txHash)}
             </a>

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Image from "next/image";
 
 export interface HeaderProps {
   hasSubscription: boolean;
@@ -24,15 +25,20 @@ export function Header({
   const hasBalance = subscriptionBalance && parseFloat(subscriptionBalance) > 0;
 
   return (
-    <header className="px-6 py-4 border-b border-[#1a1a2e] bg-[#0a0a0f]/95 backdrop-blur-sm flex justify-between items-center">
+    <header className="px-6 py-4 border-b border-[#2a2a3e] bg-black flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold">
-          <span className="text-white">On-Chain</span>{" "}
-          <span className="text-purple-400">AI</span>
-        </h1>
+        <Image
+          src="/quex-logo.png"
+          alt="Quex"
+          width={100}
+          height={26}
+          className="h-6 w-auto"
+        />
+        <span className="text-gray-500">|</span>
+        <span className="text-white font-medium">On-Chain AI</span>
         <button
           onClick={onDebugToggle}
-          className="text-xs px-3 py-1.5 bg-[#1a1a2e] border border-[#2a2a3e] rounded-full hover:border-purple-500/50 transition-colors"
+          className="text-xs px-3 py-1.5 bg-[#32373c] text-white rounded-full hover:bg-[#3d4349] transition-colors"
         >
           {showDebug ? "Hide Debug" : "Debug"}
         </button>
@@ -47,7 +53,7 @@ export function Header({
           <button
             onClick={onWithdraw}
             disabled={isWithdrawing}
-            className="text-xs px-3 py-1.5 bg-purple-600 rounded-full hover:bg-purple-500 disabled:opacity-50 transition-colors"
+            className="text-xs px-3 py-1.5 bg-[#7a00df] text-white rounded-full hover:bg-[#8a10ef] disabled:opacity-50 transition-colors"
           >
             {isWithdrawing ? "Withdrawing..." : "Withdraw"}
           </button>
