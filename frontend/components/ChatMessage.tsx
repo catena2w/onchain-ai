@@ -24,11 +24,13 @@ export function ChatMessage({
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`flex flex-col gap-1 max-w-[70%] ${isUser ? "items-end" : "items-start"}`}
+        className={`flex flex-col gap-1.5 max-w-[70%] ${isUser ? "items-end" : "items-start"}`}
       >
         <div
-          className={`p-3 rounded-lg ${
-            isUser ? "bg-blue-600" : "bg-gray-700"
+          className={`px-4 py-3 rounded-2xl ${
+            isUser
+              ? "bg-purple-600 text-white"
+              : "bg-[#1a1a2e] border border-[#2a2a3e] text-gray-100"
           } ${isPending ? "opacity-70" : ""}`}
         >
           {content}
@@ -40,7 +42,7 @@ export function ChatMessage({
             </span>
           )}
           {status === "confirming" && (
-            <span className="animate-pulse text-blue-400">
+            <span className="animate-pulse text-purple-400">
               Confirming on chain...
             </span>
           )}
@@ -50,7 +52,7 @@ export function ChatMessage({
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-blue-400 underline"
+              className="hover:text-purple-400 underline transition-colors"
             >
               tx:{formatTxHashShort(txHash)}
             </a>

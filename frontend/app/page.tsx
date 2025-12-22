@@ -380,16 +380,21 @@ export default function Home() {
 
   if (!isConnected) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center bg-gray-900 gap-6">
-        <h1 className="text-2xl font-bold text-white">On-Chain AI Chat</h1>
-        <p className="text-gray-400">Connect your wallet to start chatting</p>
+      <main className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] gap-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">On-Chain AI Chat</h1>
+          <p className="text-gray-400">Powered by <span className="text-purple-400 font-medium">Quex</span> Oracle</p>
+        </div>
+        <p className="text-gray-500 text-sm max-w-md text-center">
+          Every message is recorded on-chain with verifiable AI responses through trusted execution
+        </p>
         <ConnectButton />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <main className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
       <Header
         hasSubscription={hasSubscription}
         subscriptionBalance={subscriptionBalance ? formatBalance(subscriptionBalance) : undefined}
@@ -408,10 +413,11 @@ export default function Home() {
         />
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0a0f]">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 mt-20">
-            Send a message to start chatting with AI on-chain
+            <p className="text-lg mb-2">Send a message to start chatting</p>
+            <p className="text-sm text-gray-600">All conversations are recorded on-chain</p>
           </div>
         )}
         {messages.map((msg) => (
@@ -432,9 +438,9 @@ export default function Home() {
         )}
       </div>
 
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-[#1a1a2e] bg-[#0a0a0f]">
         {errorMessage && (
-          <div className="mb-3 p-3 bg-red-900/50 rounded-lg text-sm text-red-200">
+          <div className="mb-3 p-3 bg-red-900/30 border border-red-800/50 rounded-xl text-sm text-red-200">
             <div className="flex justify-between items-start">
               <span>{errorMessage}</span>
               <button
@@ -447,14 +453,14 @@ export default function Home() {
           </div>
         )}
         {!hasSubscription && (
-          <div className="mb-3 p-3 bg-yellow-900/50 rounded-lg text-sm">
-            First message requires a deposit to create subscription.
+          <div className="mb-3 p-3 bg-purple-900/20 border border-purple-700/30 rounded-xl text-sm">
+            <span className="text-purple-200">First message requires a deposit to create subscription.</span>
             <div className="mt-2 flex items-center gap-2">
               <input
                 type="number"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
-                className="w-24 px-2 py-1 bg-gray-800 rounded"
+                className="w-24 px-3 py-1.5 bg-[#1a1a2e] border border-purple-700/30 rounded-lg text-white focus:outline-none focus:border-purple-500"
                 step="0.01"
                 min="0.001"
               />
