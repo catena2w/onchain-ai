@@ -18,20 +18,20 @@ export function ChatInput({
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-3">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type your message..."
-        className="flex-1 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1 px-4 py-3 bg-[#1a1a2e] border border-[#2a2a3e] rounded-xl focus:outline-none focus:border-purple-500 transition-colors"
         disabled={isPending}
       />
       <button
         onClick={onSend}
         disabled={isPending}
-        className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        className="px-6 py-3 bg-purple-600 rounded-xl hover:bg-purple-500 disabled:opacity-50 font-medium transition-colors"
       >
         {isPending ? "Sending..." : "Send"}
       </button>

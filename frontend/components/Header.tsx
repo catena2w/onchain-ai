@@ -24,12 +24,15 @@ export function Header({
   const hasBalance = subscriptionBalance && parseFloat(subscriptionBalance) > 0;
 
   return (
-    <header className="p-4 border-b border-gray-700 flex justify-between items-center">
+    <header className="px-6 py-4 border-b border-[#1a1a2e] bg-[#0a0a0f]/95 backdrop-blur-sm flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold">On-Chain AI Chat</h1>
+        <h1 className="text-xl font-bold">
+          <span className="text-white">On-Chain</span>{" "}
+          <span className="text-purple-400">AI</span>
+        </h1>
         <button
           onClick={onDebugToggle}
-          className="text-xs px-2 py-1 bg-gray-800 rounded hover:bg-gray-700"
+          className="text-xs px-3 py-1.5 bg-[#1a1a2e] border border-[#2a2a3e] rounded-full hover:border-purple-500/50 transition-colors"
         >
           {showDebug ? "Hide Debug" : "Debug"}
         </button>
@@ -44,7 +47,7 @@ export function Header({
           <button
             onClick={onWithdraw}
             disabled={isWithdrawing}
-            className="text-xs px-2 py-1 bg-orange-600 rounded hover:bg-orange-500 disabled:opacity-50"
+            className="text-xs px-3 py-1.5 bg-purple-600 rounded-full hover:bg-purple-500 disabled:opacity-50 transition-colors"
           >
             {isWithdrawing ? "Withdrawing..." : "Withdraw"}
           </button>
