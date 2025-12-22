@@ -20,6 +20,7 @@ import {
   buildMessagesFromEvents,
   formatBalance,
   hasActiveSubscription,
+  needsDeposit,
   type PendingMessage,
   type MessageSentLog,
   type ResponseReceivedLog,
@@ -44,6 +45,7 @@ export default function Home() {
   const [showDebug, setShowDebug] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [debugVersion, setDebugVersion] = useState(0);
+  const [optimisticBalance, setOptimisticBalance] = useState<bigint | null>(null);
   // Store event logs with guaranteed txHash (React state for proper re-renders)
   const [messageSentLogs, setMessageSentLogs] = useState<MessageSentLog[]>([]);
   const [responseReceivedLogs, setResponseReceivedLogs] = useState<ResponseReceivedLog[]>([]);
@@ -151,6 +153,9 @@ export default function Home() {
   });
 
   const hasSubscription = hasActiveSubscription(subscriptionId);
+  // Use optimistic balance if set, otherwise use actual balance
+  const displayBalance = optimisticBalance !== null ? optimisticBalance : subscriptionBalance;
+  const showDepositPrompt = needsDeposit(subscriptionId, displayBalance);
 
   // Watch for ResponseReceived events
   useWatchContractEvent({
@@ -300,7 +305,7 @@ export default function Home() {
       return;
     }
 
-    const value = hasSubscription ? 0n : parseEther(depositAmount);
+    const value = showDepositPrompt ? parseEther(depositAmount) : 0n;
     const confirmedMessages = messages.filter(m => m.status === "confirmed");
     const body = buildOpenAIBody(input, { history: confirmedMessages });
     const messageContent = input;
@@ -337,11 +342,12 @@ export default function Home() {
         },
       }
     );
-  }, [input, address, contractAddress, hasSubscription, depositAmount, writeContract]);
+  }, [input, address, contractAddress, showDepositPrompt, depositAmount, writeContract, messages]);
 
   const handleWithdraw = useCallback(() => {
     if (!contractAddress) return;
     debug("Withdrawing from subscription");
+    setOptimisticBalance(0n); // Optimistically set balance to 0
     withdrawContract(
       {
         address: contractAddress,
@@ -354,9 +360,12 @@ export default function Home() {
         onSuccess: (hash) => {
           debug("Withdraw success", hash);
           refetchSubscription();
+          // Clear optimistic balance after a delay to let the real balance update
+          setTimeout(() => setOptimisticBalance(null), 5000);
         },
         onError: (error) => {
           debug("Withdraw error", error);
+          setOptimisticBalance(null); // Revert optimistic update on error
         },
       }
     );
@@ -398,7 +407,7 @@ export default function Home() {
     <main className="min-h-screen bg-black text-white flex flex-col">
       <Header
         hasSubscription={hasSubscription}
-        subscriptionBalance={subscriptionBalance ? formatBalance(subscriptionBalance) : undefined}
+        subscriptionBalance={displayBalance !== undefined ? formatBalance(displayBalance) : undefined}
         currencySymbol={currentChain.nativeCurrency.symbol}
         onDebugToggle={() => setShowDebug(!showDebug)}
         showDebug={showDebug}
@@ -453,9 +462,11 @@ export default function Home() {
             </div>
           </div>
         )}
-        {!hasSubscription && (
+        {showDepositPrompt && (
           <div className="mb-3 p-3 bg-[#00d084]/10 border border-[#00d084]/30 rounded-xl text-sm">
-            <span className="text-gray-200">First message requires a deposit to create subscription.</span>
+            <span className="text-gray-200">
+              {hasSubscription ? "Balance is empty. Add funds to continue." : "First message requires a deposit to create subscription."}
+            </span>
             <div className="mt-2 flex items-center gap-2">
               <input
                 type="number"
