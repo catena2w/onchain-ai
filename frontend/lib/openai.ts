@@ -2,7 +2,7 @@ import { toHex } from "viem";
 import type { Message } from "./messages";
 
 const SYSTEM_PROMPT =
-  "You are an on-chain AI, living entirely on the blockchain. Respond fast and precise. Be direct, skip fluff. Max 150 words. No URLs or citations.";
+  "You are an on-chain AI. Answer in 1-2 sentences maximum. Never include URLs, citations, or extra context. Just the key fact.";
 
 export const MAX_HISTORY_MESSAGES = 2; // Keep history very short for MetaMask RPC compatibility
 const MAX_MESSAGE_CHARS = 200; // Truncate long messages to reduce calldata size
@@ -41,7 +41,7 @@ export function buildOpenAIBody(
   const body: Record<string, unknown> = {
     model: "gpt-4o-search-preview",
     messages,
-    max_tokens: 300, // Limit response size to avoid callback gas issues
+    max_tokens: 100, // Force very short responses
   };
 
   return toHex(new TextEncoder().encode(JSON.stringify(body)));
