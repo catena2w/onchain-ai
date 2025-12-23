@@ -173,16 +173,29 @@ export default function Home() {
   // Check if we're waiting for any responses
   const awaitingResponses = messageSentLogs.length > responseReceivedLogs.length;
 
-  // Watch for ResponseReceived events (with explicit polling for RPC compatibility)
+  // Helper to add responses without duplicates (first one wins)
+  const addResponsesIfNew = useCallback((newResponses: ResponseReceivedLog[], source: string) => {
+    if (newResponses.length === 0) return;
+    setResponseReceivedLogs((prev) => {
+      const existingIds = new Set(prev.map((r) => r.messageId));
+      const unique = newResponses.filter((r) => !existingIds.has(r.messageId));
+      if (unique.length > 0) {
+        debug(`New responses from ${source}`, { count: unique.length, ids: unique.map(r => Number(r.messageId)) });
+        return [...prev, ...unique];
+      }
+      return prev;
+    });
+  }, []);
+
+  // Watch for ResponseReceived events (subscription mode - first to detect wins)
   useWatchContractEvent({
     address: contractAddress,
     abi: chatOracleAbi,
     eventName: "ResponseReceived",
-    poll: true, // Force polling mode (more reliable than eth_subscribe)
-    pollingInterval: 2_000, // Poll every 2 seconds
+    poll: true,
+    pollingInterval: 2_000,
     onLogs: (logs) => {
-      debug("ResponseReceived event (watch)", logs);
-      const newResponses: ResponseReceivedLog[] = logs
+      const responses: ResponseReceivedLog[] = logs
         .filter((log) => {
           const args = (log as { args?: { messageId?: bigint; response?: string } }).args;
           return args?.messageId !== undefined && args?.response && log.transactionHash;
@@ -195,28 +208,18 @@ export default function Home() {
             txHash: log.transactionHash as `0x${string}`,
           };
         });
-      if (newResponses.length > 0) {
-        setResponseReceivedLogs((prev) => [...prev, ...newResponses]);
-      }
+      addResponsesIfNew(responses, "watch");
     },
     onError: (error) => {
       debug("ResponseReceived watch error", error);
     },
   });
 
-  // Fallback polling - only when waiting for responses (every 3 seconds)
+  // Polling fallback - only active when waiting for responses (races with subscription)
   useEffect(() => {
     if (!publicClient || !contractAddress || !awaitingResponses) return;
 
     const pollForResponses = async () => {
-      const messageIds = messageSentLogs.map((m) => m.messageId);
-      const existingResponseIds = new Set(responseReceivedLogs.map((r) => r.messageId));
-      const missingResponseIds = messageIds.filter((id) => !existingResponseIds.has(id));
-
-      if (missingResponseIds.length === 0) return;
-
-      debug("Polling for responses", { missingCount: missingResponseIds.length });
-
       try {
         const rawResponseLogs = await publicClient.getLogs({
           address: contractAddress,
@@ -232,31 +235,24 @@ export default function Home() {
           toBlock: "latest",
         });
 
-        const newResponses: ResponseReceivedLog[] = rawResponseLogs
-          .filter((log) => {
-            const msgId = log.args.messageId;
-            return msgId !== undefined && log.args.response && log.transactionHash &&
-                   missingResponseIds.includes(msgId) && !existingResponseIds.has(msgId);
-          })
+        const responses: ResponseReceivedLog[] = rawResponseLogs
+          .filter((log) => log.args.messageId !== undefined && log.args.response && log.transactionHash)
           .map((log) => ({
             messageId: log.args.messageId!,
             response: log.args.response!,
             txHash: log.transactionHash!,
           }));
 
-        if (newResponses.length > 0) {
-          debug("Polled new responses", { count: newResponses.length });
-          setResponseReceivedLogs((prev) => [...prev, ...newResponses]);
-        }
+        addResponsesIfNew(responses, "poll");
       } catch (error) {
         debug("Poll error", error);
       }
     };
 
-    // Poll every 3 seconds while waiting
+    // Poll every 3 seconds while waiting for responses
     const interval = setInterval(pollForResponses, 3000);
     return () => clearInterval(interval);
-  }, [publicClient, contractAddress, messageSentLogs, responseReceivedLogs, awaitingResponses]);
+  }, [publicClient, contractAddress, awaitingResponses, addResponsesIfNew]);
 
   // Watch for MessageSent events (with explicit polling for RPC compatibility)
   useWatchContractEvent({
