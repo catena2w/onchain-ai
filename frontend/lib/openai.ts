@@ -5,12 +5,19 @@ const SYSTEM_PROMPT =
   "You are a helpful assistant responding to blockchain users. Keep responses very short (max 200 words). Do not include URLs or citations - just the key facts.";
 
 export const MAX_HISTORY_MESSAGES = 6; // Keep history short to reduce gas costs
+const MAX_MESSAGE_CHARS = 500; // Truncate long messages to reduce calldata size
 
 type OpenAIMessage = { role: "system" | "user" | "assistant"; content: string };
 
 type BuildOptions = {
   history?: Message[];
 };
+
+// Truncate content to avoid huge calldata from long AI responses
+function truncateContent(content: string, maxChars: number): string {
+  if (content.length <= maxChars) return content;
+  return content.slice(0, maxChars) + "...";
+}
 
 export function buildOpenAIBody(
   prompt: string,
@@ -22,10 +29,10 @@ export function buildOpenAIBody(
     { role: "system", content: SYSTEM_PROMPT },
   ];
 
-  // Add conversation history (limited to last MAX_HISTORY_MESSAGES)
+  // Add conversation history (limited to last MAX_HISTORY_MESSAGES, truncated)
   const recentHistory = history.slice(-MAX_HISTORY_MESSAGES);
   for (const msg of recentHistory) {
-    messages.push({ role: msg.role, content: msg.content });
+    messages.push({ role: msg.role, content: truncateContent(msg.content, MAX_MESSAGE_CHARS) });
   }
 
   // Add current prompt
