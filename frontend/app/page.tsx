@@ -14,7 +14,7 @@ import {
 import { parseEther, encodeFunctionData } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { chatOracleAbi, quexCoreAbi } from "@/lib/abi";
-import { CONTRACT_ADDRESSES, QUEX_CORE_ADDRESSES, CHAINS, arbitrumSepolia, DEFAULT_DEPOSIT } from "@/lib/config";
+import { CONTRACT_ADDRESSES, QUEX_CORE_ADDRESSES, CHAINS, arbitrum, DEFAULT_DEPOSIT } from "@/lib/config";
 import { buildOpenAIBody, getExplorerUrl } from "@/lib/utils";
 import { createDebugLogger } from "@/lib/debug";
 import {
@@ -59,7 +59,7 @@ export default function Home() {
 
   const contractAddress = CONTRACT_ADDRESSES[chainId];
   const quexCoreAddress = QUEX_CORE_ADDRESSES[chainId];
-  const currentChain = CHAINS.find((c) => c.id === chainId) ?? arbitrumSepolia;
+  const currentChain = CHAINS.find((c) => c.id === chainId) ?? arbitrum;
 
   // Update deposit amount when chain changes
   useEffect(() => {

@@ -10,6 +10,11 @@ contract DeployScript is Script {
     address constant ARB_SEPOLIA_ORACLE_POOL = 0xE83bB2038F098E7aD40DC03298F4337609E6b0d5;
     address constant ARB_SEPOLIA_TD_ADDRESS = 0x128B61f611EB624d35c9Af77aAF785432080C8Df;
 
+    // Arbitrum One (mainnet) addresses
+    address constant ARB_MAINNET_QUEX_CORE = 0x97076a3c0A414E779f7BEC2Bd196D4FdaADFDB96;
+    address constant ARB_MAINNET_ORACLE_POOL = 0xE83bB2038F098E7aD40DC03298F4337609E6b0d5;
+    address constant ARB_MAINNET_TD_ADDRESS = 0xB86EeAe9e3F0D3a91cE353CB0EfEaFF17CF16E6f;
+
     // 0G Mainnet addresses
     address constant ZG_MAINNET_QUEX_CORE = 0x48f15775Bc2d83BA18485FE19D4BC6a7ad90293c;
     address constant ZG_MAINNET_ORACLE_POOL = 0xe0655573eCfE62a2e79ca99a4FB8d87a3e0B4822;
@@ -29,6 +34,12 @@ contract DeployScript is Script {
             oraclePool = ARB_SEPOLIA_ORACLE_POOL;
             tdAddress = ARB_SEPOLIA_TD_ADDRESS;
             console.log("Deploying to Arbitrum Sepolia...");
+        } else if (chainId == 42161) {
+            // Arbitrum One (mainnet)
+            quexCore = ARB_MAINNET_QUEX_CORE;
+            oraclePool = ARB_MAINNET_ORACLE_POOL;
+            tdAddress = ARB_MAINNET_TD_ADDRESS;
+            console.log("Deploying to Arbitrum One...");
         } else if (chainId == 16661) {
             // 0G Mainnet (Aristotle)
             quexCore = ZG_MAINNET_QUEX_CORE;
