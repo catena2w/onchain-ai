@@ -1,22 +1,11 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { defineChain } from "viem";
-import { arbitrumSepolia as baseArbitrumSepolia } from "viem/chains";
-
-// Override Arbitrum Sepolia with custom RPC if provided
-const arbSepoliaRpc = process.env.NEXT_PUBLIC_ARB_SEPOLIA_RPC;
-export const arbitrumSepolia = arbSepoliaRpc
-  ? {
-      ...baseArbitrumSepolia,
-      rpcUrls: {
-        default: { http: [arbSepoliaRpc] },
-      },
-    }
-  : baseArbitrumSepolia;
+import { arbitrum } from "viem/chains";
 
 export const zgMainnet = defineChain({
   id: 16661,
   name: "0G Mainnet",
-  nativeCurrency: { name: "A0GI", symbol: "A0GI", decimals: 18 },
+  nativeCurrency: { name: "0G", symbol: "0G", decimals: 18 },
   rpcUrls: {
     default: { http: ["https://evmrpc.0g.ai"] },
   },
@@ -25,19 +14,10 @@ export const zgMainnet = defineChain({
   },
 });
 
-export const zgTestnet = defineChain({
-  id: 16601,
-  name: "0G Newton Testnet",
-  nativeCurrency: { name: "A0GI", symbol: "A0GI", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://evmrpc-testnet.0g.ai"] },
-  },
-  blockExplorers: {
-    default: { name: "0G Explorer", url: "https://chainscan-newton.0g.ai" },
-  },
-});
+export { arbitrum };
 
-export const CHAINS = [arbitrumSepolia, zgMainnet, zgTestnet] as const;
+// Only show mainnets (hide testnets)
+export const CHAINS = [arbitrum, zgMainnet] as const;
 
 export const config = getDefaultConfig({
   appName: "On-Chain AI Chat",
@@ -48,21 +28,18 @@ export const config = getDefaultConfig({
 
 // Contract addresses per chain - update after deployment
 export const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
-  [arbitrumSepolia.id]: "0x6Fe4C7A89dd06295Cf5cdd33b92c33451d408427",
+  [arbitrum.id]: "0xb7941532b4E4355744F2CD14401cA2De9abA1C0C",
   [zgMainnet.id]: "0xeC677913eFA4eDbB1033dFe5464eC35B21759c64",
-  [zgTestnet.id]: "0x0000000000000000000000000000000000000000",
 };
 
 // Quex Core addresses per chain
 export const QUEX_CORE_ADDRESSES: Record<number, `0x${string}`> = {
-  [arbitrumSepolia.id]: "0x97076a3c0A414E779f7BEC2Bd196D4FdaADFDB96",
+  [arbitrum.id]: "0x97076a3c0A414E779f7BEC2Bd196D4FdaADFDB96",
   [zgMainnet.id]: "0x48f15775Bc2d83BA18485FE19D4BC6a7ad90293c",
-  [zgTestnet.id]: "0x0000000000000000000000000000000000000000",
 };
 
-// Block explorer URLs per chain
-export const EXPLORER_URLS: Record<number, string> = {
-  [arbitrumSepolia.id]: "https://sepolia.arbiscan.io",
-  [zgMainnet.id]: "https://chainscan.0g.ai",
-  [zgTestnet.id]: "https://chainscan-newton.0g.ai",
+// Default deposit amounts per chain
+export const DEFAULT_DEPOSIT: Record<number, string> = {
+  [arbitrum.id]: "0.001",
+  [zgMainnet.id]: "0.1",
 };
