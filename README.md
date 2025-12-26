@@ -2,6 +2,7 @@
 
 [![Frontend](https://github.com/quex-tech/onchain-ai/actions/workflows/frontend.yml/badge.svg)](https://github.com/quex-tech/onchain-ai/actions/workflows/frontend.yml)
 [![Contracts](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml/badge.svg)](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml)
+[![codecov](https://codecov.io/gh/quex-tech/onchain-ai/graph/badge.svg)](https://codecov.io/gh/quex-tech/onchain-ai)
 
 A ChatGPT-like interface where every request and response is recorded on-chain via [Quex](https://quex.tech) oracles.
 
