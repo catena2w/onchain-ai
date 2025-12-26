@@ -3,6 +3,9 @@ import { defineChain } from "viem";
 import { arbitrum as viemArbitrum } from "viem/chains";
 import chainsConfig from "../chains.json";
 
+// Base path for assets (matches next.config.ts)
+export const basePath = process.env.NODE_ENV === "production" ? "/onchain-ai" : "";
+
 // Build chain definitions from shared config
 const arbitrumConfig = chainsConfig.chains.arbitrum;
 const zgMainnetConfig = chainsConfig.chains.zgMainnet;
@@ -24,11 +27,11 @@ export const zgMainnet = defineChain({
   blockExplorers: {
     default: { name: "0G Explorer", url: zgMainnetConfig.explorerUrl },
   },
-  iconUrl: "/0g-logo.svg",
+  iconUrl: `${basePath}/0g-logo.svg`,
 });
 
-// Only show mainnets (hide testnets)
-export const CHAINS = [arbitrum, zgMainnet] as const;
+// Only show mainnets (hide testnets) - zgMainnet first as default
+export const CHAINS = [zgMainnet, arbitrum] as const;
 
 export const config = getDefaultConfig({
   appName: "On-Chain AI Chat",
