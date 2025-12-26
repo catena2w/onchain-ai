@@ -4,17 +4,9 @@
 [![Contracts](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml/badge.svg)](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml)
 [![codecov](https://codecov.io/gh/quex-tech/onchain-ai/graph/badge.svg)](https://codecov.io/gh/quex-tech/onchain-ai)
 
-A ChatGPT-like interface where every request and response is recorded on-chain via [Quex](https://quex.tech) oracles.
+A ChatGPT-like interface for [Quex](https://quex.tech) oracle to get on-chain verifiable responses from ChatGPT.
 
 **Live Demo:** https://quex-tech.github.io/onchain-ai/
-
-## Architecture
-
-```
-Frontend (Next.js) → Smart Contract → Quex Oracle → OpenAI API
-                                   ↓
-                          Response stored on-chain
-```
 
 ## Quick Start
 
