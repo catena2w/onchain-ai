@@ -9,8 +9,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "pretest": "cp ../chains.json ./chains.json",
     "test": "vitest",
+    "pretest:run": "cp ../chains.json ./chains.json",
     "test:run": "vitest run",
+    "pretest:coverage": "cp ../chains.json ./chains.json",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
