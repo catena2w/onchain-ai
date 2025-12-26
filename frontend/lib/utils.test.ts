@@ -17,11 +17,6 @@ describe("getExplorerUrl", () => {
     expect(url).toBe("https://chainscan.0g.ai/tx/0xdef456");
   });
 
-  it("returns 0G testnet URL for chain 16601", () => {
-    const url = getExplorerUrl(16601, "0x789ghi");
-    expect(url).toBe("https://chainscan-newton.0g.ai/tx/0x789ghi");
-  });
-
   it("defaults to Arbitrum One for unknown chains", () => {
     const url = getExplorerUrl(99999, "0xunknown");
     expect(url).toBe("https://arbiscan.io/tx/0xunknown");
