@@ -6,7 +6,6 @@ import "../src/ChatOracle.sol";
 
 contract DeployScript is Script {
     function run() external {
-        bytes memory encryptedApiKey = vm.envBytes("ENCRYPTED_API_KEY");
         uint256 chainId = block.chainid;
 
         // Read shared config from project root
@@ -25,18 +24,16 @@ contract DeployScript is Script {
         } else if (chainId == 16661) {
             chainKey = "zgMainnet";
             console.log("Deploying to 0G Mainnet...");
-        } else if (chainId == 16601) {
-            chainKey = "zgTestnet";
-            console.log("Deploying to 0G Testnet...");
         } else {
             revert("Unsupported chain");
         }
 
-        // Parse addresses from JSON
+        // Parse config from JSON
         string memory prefix = string.concat(".chains.", chainKey);
         address quexCore = vm.parseJsonAddress(json, string.concat(prefix, ".quexCore"));
         address oraclePool = vm.parseJsonAddress(json, string.concat(prefix, ".oraclePool"));
         address tdAddress = vm.parseJsonAddress(json, string.concat(prefix, ".tdAddress"));
+        bytes memory encryptedApiKey = vm.parseJsonBytes(json, string.concat(prefix, ".encryptedOpenaiKey"));
 
         vm.startBroadcast();
 
