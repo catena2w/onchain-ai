@@ -1,12 +1,11 @@
 # Quex On-Chain AI Chat
 
-[![Frontend](https://github.com/catena2w/onchain-ai/actions/workflows/frontend.yml/badge.svg)](https://github.com/catena2w/onchain-ai/actions/workflows/frontend.yml)
-[![Contracts](https://github.com/catena2w/onchain-ai/actions/workflows/contracts.yml/badge.svg)](https://github.com/catena2w/onchain-ai/actions/workflows/contracts.yml)
-
-[![Frontend Coverage](https://codecov.io/gh/catena2w/onchain-ai/graph/badge.svg?flag=frontend)](https://codecov.io/gh/catena2w/onchain-ai)
-[![Contracts Coverage](https://codecov.io/gh/catena2w/onchain-ai/graph/badge.svg?flag=contracts)](https://codecov.io/gh/catena2w/onchain-ai)
+[![Frontend](https://github.com/quex-tech/onchain-ai/actions/workflows/frontend.yml/badge.svg)](https://github.com/quex-tech/onchain-ai/actions/workflows/frontend.yml)
+[![Contracts](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml/badge.svg)](https://github.com/quex-tech/onchain-ai/actions/workflows/contracts.yml)
 
 A ChatGPT-like interface where every request and response is recorded on-chain via [Quex](https://quex.tech) oracles.
+
+**Live Demo:** https://quex-tech.github.io/onchain-ai/
 
 ## Architecture
 
@@ -18,58 +17,32 @@ Frontend (Next.js) → Smart Contract → Quex Oracle → OpenAI API
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js 18+
-- [Foundry](https://book.getfoundry.sh/getting-started/installation)
-- Wallet with testnet ETH (Arbitrum Sepolia)
-- OpenAI API key
-
-### 1. Clone and install
-
 ```bash
-git clone <repo-url>
-cd quex-onchain-ai
+# Install
+cd frontend && npm install
 
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-
-# Install contract dependencies
-cd contracts && forge install && cd ..
-```
-
-### 2. Deploy contracts
-
-See [contracts/README.md](./contracts/README.md) for deployment instructions.
-
-### 3. Run frontend
-
-```bash
-cd frontend
+# Run
 npm run dev
 ```
 
 Open http://localhost:3000
 
+## Deployed Networks
+
+| Network | ChatOracle | Explorer |
+|---------|------------|----------|
+| Arbitrum One | `0xfCD2634F...` | [arbiscan.io](https://arbiscan.io/address/0xfCD2634F7dA892e32e4212dd2cF30B81b8acba42) |
+| Aristotle (0G) | `0x46eb80d4...` | [chainscan.0g.ai](https://chainscan.0g.ai/address/0x46eb80d40782bb75D22b3Fa1cAe597123e1164f9) |
+| Arbitrum Sepolia | `0x6Fe4C7A8...` | [sepolia.arbiscan.io](https://sepolia.arbiscan.io/address/0x6Fe4C7A89dd06295Cf5cdd33b92c33451d408427) |
+
 ## Project Structure
 
 ```
-├── contracts/          # Solidity smart contracts (Foundry)
-│   ├── src/           # Contract source
-│   ├── test/          # Contract tests
-│   └── script/        # Deployment scripts
-├── frontend/          # Next.js web application
-│   ├── app/           # App router pages
-│   └── lib/           # Config, ABI, providers
-└── CLAUDE.md          # Development guidelines
+├── contracts/          # Solidity (Foundry)
+├── frontend/           # Next.js
+├── chains.json         # Shared chain config
+└── CLAUDE.md           # Dev guidelines
 ```
-
-## Supported Networks
-
-| Network | Status |
-|---------|--------|
-| Arbitrum Sepolia | Testnet |
-| 0G Mainnet | Coming soon |
 
 ## Links
 

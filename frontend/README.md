@@ -2,19 +2,18 @@
 
 Next.js web interface for the ChatOracle smart contract.
 
-## Setup
-
-```bash
-npm install
-```
-
 ## Development
 
 ```bash
+npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+## Test
+
+```bash
+npm run test:run
+```
 
 ## Build
 
@@ -22,19 +21,16 @@ Open http://localhost:3000
 npm run build
 ```
 
+Static output in `out/` directory.
+
 ## Configuration
 
-Update contract addresses in `lib/config.ts` after deployment:
-
-```typescript
-export const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
-  [arbitrumSepolia.id]: "0xYOUR_DEPLOYED_ADDRESS",
-  // ...
-};
-```
+Chain config is in `../chains.json` (copied at build time).
 
 ## Tech Stack
 
-- Next.js 16 (App Router)
-- wagmi v3 + viem (wallet connection)
+- Next.js 16 (App Router, static export)
+- wagmi v2 + viem
+- RainbowKit
 - Tailwind CSS
+- Vitest + fast-check
