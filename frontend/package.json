@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "cp ../chains.json ./chains.json",
     "dev": "next dev",
+    "prebuild": "cp ../chains.json ./chains.json",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

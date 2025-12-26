@@ -9,9 +9,9 @@ contract DeployScript is Script {
         bytes memory encryptedApiKey = vm.envBytes("ENCRYPTED_API_KEY");
         uint256 chainId = block.chainid;
 
-        // Read shared config from frontend directory
+        // Read shared config from project root
         string memory root = vm.projectRoot();
-        string memory path = string.concat(root, "/../frontend/chains.json");
+        string memory path = string.concat(root, "/../chains.json");
         string memory json = vm.readFile(path);
 
         // Get chain key based on chainId

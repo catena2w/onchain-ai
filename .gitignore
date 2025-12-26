@@ -35,3 +35,6 @@ __pycache__/
 
 # Claude sync file (internal communication)
 .claude-sync.md
+
+# Frontend chains.json is copied from root
+frontend/chains.json
